@@ -3,6 +3,7 @@ const sqlite3 = require('sqlite3');
 const cors = require('cors')
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 const app = express();
 
@@ -32,12 +33,17 @@ app.post('/register', (req, res) => {
        return res.status(400).json({ error: 'Пользователь с таким логином уже существует!'})
     }
 
-    db.run(`insert into users (login, password) values (?, ?)`, [login, password], 
-    function(err){
+    bcrypt.hash(password, 10, (err, hash) => {
       if(err){
-        return res.status(400).json({error: err.message})
+        return res.status(500).json({error: err.message})
       }
-      res.status(201).json({message: 'Пользователь зарегистрирован'})
+      db.run(`insert into users (login, password) values (?, ?)`, [login, hash], 
+          function(err){
+            if(err){
+              return res.status(400).json({error: err.message})
+            }
+            res.status(201).json({message: 'Пользователь зарегистрирован'})
+          })
     })
   })
 })
@@ -50,12 +56,14 @@ app.post('/login', (req, res) => {
     if(err || !user){
       return res.status(401).json({message: 'Неверный логин'})
     }
-    if(user.password !== password){
-      return res.status(401).json({message: 'Неверный пароль'});
-    }
-    const userId = user.id
-    const token = jwt.sign({userId: user.id, login: user.login}, 'secret', {expiresIn: '1h'})
-    res.json({token, login, userId})
+    bcrypt.compare(password, user.password, (err, match) => {
+      if(!match){
+        return res.status(401).json({message: 'Неверный пароль'});
+      }
+      const userId = user.id
+      const token = jwt.sign({userId: user.id, login: user.login}, 'secret', {expiresIn: '1h'})
+      res.json({token, login, userId})
+    })
   })
 })
 

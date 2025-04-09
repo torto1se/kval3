@@ -74,7 +74,7 @@ function Orders() {
             <tr style={{borderBottom: '1px solid black'}}>
               <th style={{borderRight: '1px solid black'}}>id</th>
               <th style={{borderRight: '1px solid black'}}>Заголовок</th>
-              <th style={{borderRight: '1px solid black'}}>Описания</th>
+              <th style={{borderRight: '1px solid black'}}>Описание</th>
               <th style={{borderRight: '1px solid black'}}>Дата</th>
               <th style={{borderRight: '1px solid black'}}>Заказчик</th>
               <th style={{borderRight: '1px solid black'}}>Статус</th>
